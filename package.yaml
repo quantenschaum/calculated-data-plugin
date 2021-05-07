@@ -2,28 +2,22 @@
 #
 # check https://nfpm.goreleaser.com/configuration for detailed usage
 #
-name: "avnav-history-plugin"
+name: "avnav-more-nmea-plugin"
 arch: "all"
 platform: "linux"
-version: "20210116"
+version: "2021006"
 keep_version: true
 section: "default"
 priority: "extra"
 depends:
 - avnav
-maintainer: "Andreas Vogel <andreas@wellenvogel.de>"
+maintainer: "Klaus D. Schmidt <kdschmidt@bluewin.ch>"
 description: |
-  AvNav plugin to display a history of internal data or values from xdr records
-homepage: "https://example.com"
+  AvNav plugin to calculate derived data out of internal data or values
+homepage: ""
 license: "MIT"
 contents:
 - src: ./plugin.*
-  dst: /usr/lib/avnav/plugins/history/
-- src: ./index.*
-  dst: /usr/lib/avnav/plugins/history/
-- src: ./historychart.*
-  dst: /usr/lib/avnav/plugins/history/
-- src: ./icons/*
-  dst: /usr/lib/avnav/plugins/history/icons
+  dst: /usr/lib/avnav/plugins/more-nmea/
 - src: ./lib/*
-  dst: /usr/lib/avnav/plugins/history/lib  
+  dst: /usr/lib/avnav/plugins/more-nmea/lib  
