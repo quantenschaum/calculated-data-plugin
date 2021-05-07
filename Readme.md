@@ -1,4 +1,4 @@
-AvNav MORE-NMEA Plugin
+AvNav more-nmea Plugin
 ===========================
 
 This project provides a plugin for [AvNav](https://www.wellenvogel.net/software/avnav/docs/beschreibung.html?lang=en) 
@@ -9,7 +9,7 @@ to calculate:
 
   MagVar (Magnetic Variation)    -> "gps.MagVar" (based on the World Magnetic Model 2020 der NOAA (https://www.ngdc.noaa.gov/)
 
-if the internal data store in AvNav contains apparent Winddata ("gps.windReference"=="R", Windangle "gps.windAngle" and Windspeed "gps.WindSpeed"):
+if the internal data store in AvNav contains apparent Winddata ("gps.windReference"=="R", Windangle "gps.windAngle" and Windspeed "gps.WindSpeed") it calculates:
 
 - AWD (Apparent WindDirection)  -> "gps.AWD"
   
@@ -29,6 +29,8 @@ if course NMEA records are found ($HDM or $HDG or $VHW) it calculates:
 - HDGm (Heading magnetic)       -> "gps.HDGm" 
   
 - HDGt (Heading true) 	        -> "gps.HDGt"
+
+in case of $VHW it will create also
   
 - STW (Speed through water)      -> "gps.STW"
   
@@ -65,7 +67,7 @@ One can use the default widget from avnav to visualize the data by selecting the
 
 Formatter
 ---------
-To display values and charts in a proper unit there are proper formatters included in the default widget. 
+To display values and charts in a proper unit ther necessary formatters are included in the default widget. 
 
 
 Implementation Details
@@ -78,11 +80,11 @@ Take care for NMEA200 Sources:
 
 - canboat instead sends $VHW also without Heading!
 
-HDGt (Heading True) is calculated from HDGm (Heading magnetic from $HDM or $HDG or $VHW) taking into account the magnetic variation , if no True Heading Data is received.
+HDGt (Heading True) is calculated from HDGm (Heading magnetic from $HDM or $HDG or $VHW) taking into account the magnetic variation if no True Heading Data is received.
 
 Receiving True Heading overwrites calculated Data!
 
-if magnetic variation is received (by $VHW orr $HDG) the calculated variation is no more used!
+If magnetic variation is received (by $VHW orr $HDG) the calculated variation is no more used!
               
 
 Package Building
