@@ -15,7 +15,8 @@ hasgeomag = False
 import sys
 try:
   # add current directory to sys.path to import library from there
-  sys.path.insert(0, os.path.dirname(__file__))
+
+  sys.path.insert(0, os.path.dirname(__file__)+'/lib')
   import geomag as geomag    
   hasgeomag = True
 except:
@@ -140,7 +141,7 @@ class Plugin(object):
     self.api.setStatus('MORE-NMEA', 'running')
     self.config = Config(self.api)
     if hasgeomag:
-        wmm_filename = os.path.join(os.path.dirname(__file__), self.config.WMM_FILE)
+        wmm_filename = os.path.join(os.path.dirname(__file__)+'/lib', self.config.WMM_FILE)
         self.gm = geomag.GeoMag(wmm_filename)
     while not self.api.shouldStopMainThread():
       try: 
