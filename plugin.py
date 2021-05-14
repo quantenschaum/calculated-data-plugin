@@ -38,7 +38,7 @@ class Plugin(object):
   PATHSTW = "gps.STW"
   PATHGMM = "gps.MagVar"
   WMM_FILE = 'WMM2020.COF'
-  FILTER= '$HDG,$HDM,$HDT,$VHW'
+  FILTER = ['$HDG','$HDM','$HDT','$VHW']
   CONFIG = [
       {
       'name':'WMM_FILE',
