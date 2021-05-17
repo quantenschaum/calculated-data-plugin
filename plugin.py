@@ -40,10 +40,9 @@ class Plugin(object):
   PATHSTW = "gps.STW"
   PATHGMM = "gps.MagVar"
   WMM_FILE = 'WMM2020.COF'
-  OWNID = 'KS'
+  OWNID = 'IN'
   outFilter = [] 
-  FILTER = []
-  # FILTER= ['$HDG','$HDM','$HDT','$VHW']
+  FILTER = ['$HDG','$HDM','$HDT','$VHW']
   CONFIG = [
       {
       'name':'WMM_FILE',
@@ -268,7 +267,6 @@ class Plugin(object):
           lastnmea = now
 
   def write_NMEA_records(self, gpsdata):
-    # print(self.receivedTags)
     if('TWA' in gpsdata and 'AWA' in gpsdata):  # empfange scheinbare Winddaten
         # $MWD = TWD & TWS          
         if not ('MWD' in self.receivedTags):
@@ -286,7 +284,7 @@ class Plugin(object):
                 self.api.addNMEA(s, addCheckSum=True)
         # MWV (R)
             s = self.make_sentence('MWV', gpsdata['AWA'], 'R', gpsdata['AWS'], 'R')
-            # self.api.addNMEA(s, True, True, 'GG')
+            # self.api.addNMEA(s, addCheckSum=True)
 
         if('HDGt' in gpsdata):
             if not ('HDM' in self.receivedTags):
@@ -302,11 +300,11 @@ class Plugin(object):
                 if('MagVar' in gpsdata):
                     s = self.make_sentence('HDG', gpsdata['HDGt'] - gpsdata['MagVar'], '', '', gpsdata['MagVar'], 'E')
                     if NMEAParser.checkFilter(s, self.outFilter):
-                        self.api.addNMEA(s, True, True, 'GG')
+                        self.api.addNMEA(s, addCheckSum=True)
                 elif('HDGm' in gpsdata):
                     s = self.make_sentence('HDG', gpsdata['HDGm'], '', '', '', '')      
                     if NMEAParser.checkFilter(s, self.outFilter):
-                        self.api.addNMEA(s, True, True, 'GG')
+                        self.api.addNMEA(s, addCheckSum=True)
       
   def make_sentence(self, title, *keys):
       s = '$' + self.OWNID + title
