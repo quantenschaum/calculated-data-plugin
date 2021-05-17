@@ -31,6 +31,7 @@ class Config(object):
 
 
 class Plugin(object):
+  PATHAWA = "gps.AWA"
   PATHAWD = "gps.AWD"
   PATHTWD = "gps.TWD"
   PATHTWS = "gps.TWS"
@@ -117,6 +118,10 @@ class Plugin(object):
         {
           'path': cls.PATHAWD,
           'description': 'apparent Wind direction',
+        },
+        {
+          'path': cls.PATHAWA,
+          'description': 'apparent Wind angle',
         },
         {
           'path': cls.PATHTWD,
@@ -238,11 +243,13 @@ class Plugin(object):
       if 'windSpeed' in gpsdata:
         computesWind=True
         if gpsdata['windReference'] == 'R':
-          if (self.calcTrueWind(gpsdata)):
-            self.api.addData(self.PATHAWD, gpsdata['AWD'])
-            self.api.addData(self.PATHTWD, gpsdata['TWD'])
-            self.api.addData(self.PATHTWS, gpsdata['TWS'])
-            self.api.addData(self.PATHTWA, gpsdata['TWA'])
+            computesWind=True
+            if (self.calcTrueWind(gpsdata)):
+                self.api.addData(self.PATHAWA, gpsdata['AWA'])
+                self.api.addData(self.PATHAWD, gpsdata['AWD'])
+                self.api.addData(self.PATHTWD, gpsdata['TWD'])
+                self.api.addData(self.PATHTWS, gpsdata['TWS'])
+                self.api.addData(self.PATHTWA, gpsdata['TWA'])
       if computesVar or computesWind:
         stText='computing '
         if computesVar:
@@ -291,8 +298,6 @@ class Plugin(object):
       return False
     tag = darray[0][3:]
     rt = {}
-    # print(tag)
-
     try:
       if tag == 'HDG':
         rt['MagDevDir'] = 'X'
@@ -333,8 +338,6 @@ class Plugin(object):
           self.api.addData(self.PATHHDG_M, rt['Heading'])
           self.api.addData(self.PATHHDG_T, rt['Heading'] + self.variation_val)
         return True
-
-      # print(tag)
       if tag == 'VHW':
         if(len(darray[1]) > 0):  # Heading True
             rt['Heading'] = float(darray[1] or '0')
@@ -363,6 +366,11 @@ class Plugin(object):
         if not 'track' in gpsdata or not 'windAngle' in gpsdata:
             return False
         try:
+            gpsdata['AWA']=gpsdata['windAngle']%360
+            if (gpsdata['AWA'] > 180):  
+                gpsdata['AWA'] -= 360;              
+            
+            gpsdata['AWS']=gpsdata['windSpeed']
             gpsdata['AWD'] = (gpsdata['windAngle'] + gpsdata['track']) % 360
             KaW = self.toKartesisch(gpsdata['AWD'])
             KaW['x'] *= gpsdata['windSpeed']  # 'm/s'
@@ -372,12 +380,14 @@ class Plugin(object):
             KaB['y'] *= gpsdata['speed']  # 'm/s'
 
             if(gpsdata['speed'] == 0 or gpsdata['windSpeed'] == 0):
-                gpsdata['TWD'] = gpsdata['AWD']
+                gpsdata['TWD'] = gpsdata['AWD'] 
             else:
                 gpsdata['TWD'] = (self.toPolWinkel(KaW['x'] - KaB['x'], KaW['y'] - KaB['y'])) % 360
 
             gpsdata['TWS'] = math.sqrt((KaW['x'] - KaB['x']) * (KaW['x'] - KaB['x']) + (KaW['y'] - KaB['y']) * (KaW['y'] - KaB['y']))
             gpsdata['TWA'] = (gpsdata['TWD'] - gpsdata['track']) % 360
+            if (gpsdata['TWA'] > 180):  
+                gpsdata['TWA'] -= 360;              
 
             return True
         except Exception:
