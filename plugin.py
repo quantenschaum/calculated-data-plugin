@@ -1,6 +1,9 @@
  # software includes geomag.py
 # by Christopher Weiss cmweiss@gmail.com
 # https://github.com/cmweiss/geomag
+      #https://github.com/mak08/VRDashboard/issues/31
+      #https://www.nmea.org/Assets/100108_nmea_0183_sentences_not_recommended_for_new_designs.pdf
+      #http://www.plaisance-pratique.com/IMG/pdf/NMEA0183-2.pdf
 
  
  
@@ -24,8 +27,7 @@ except:
 class Config(object):
 
   def __init__(self, api):
-    self.WMM_FILE = api.getConfigValue('WMM_FILE', 'WMM2020.COF')
-    self.WMM_PERIOD = api.getConfigValue('WMM_PERIOD', '3600')
+    pass
 
 
 class Plugin(object):
@@ -48,15 +50,52 @@ class Plugin(object):
       {
       'name':'WMM_PERIOD',
       'description':'Time in sec to recalculate magnetic deviation',
-      'default':3600,
+      'default':10,
       'type': 'NUMBER'
       },
       {
-        'name':'period',
+        'name':'computePeriod',
         'description': 'Compute period (s) for wind data',
         'type': 'FLOAT',
         'default': 0.5
-      }
+      },
+      {
+        'name':'NewNMEAPeriod',
+        'description': 'period (s) for NMEA records',
+        'type': 'FLOAT',
+        'default': 1
+      },
+      {
+        'name':'MWD_out',
+        'description': 'Write $MWD NMEA records',
+        'default': True,
+        'type': 'BOOLEAN'
+      },
+      {
+        'name':'MWV_T_out',
+        'description': 'Write $MWV-TRUE (TWA & TWS) NMEA records',
+        'default': True,
+        'type': 'BOOLEAN'
+
+      },
+      {
+        'name':'HDT_out',
+        'description': 'Write $HDT NMEA records (obsolete)',
+        'default': True,
+        'type': 'BOOLEAN'
+      },
+      {
+        'name':'HDM_out',
+        'description': 'Write $HDM NMEA records (obsolete)',
+        'default': True,
+        'type': 'BOOLEAN'
+      },
+      {
+        'name':'HDG_out',
+        'description': 'Write $HDG NMEA records',
+        'default': True,
+        'type': 'BOOLEAN'
+      },
       ]
 
   @classmethod
@@ -126,12 +165,31 @@ class Plugin(object):
     self.variation_val = 0
     self.MissweisungFromSensor = False
 
-    self.config = None 
     self.userAppId = None
     self.startSequence=0
-
+    self.saveAllConfig()
+    
   def stop(self):
     pass
+  
+  def getConfigValue(self,name):
+    defaults=self.pluginInfo()['config']
+    for cf in defaults:
+      if cf['name'] == name:
+        return self.api.getConfigValue(name,cf.get('default'))
+    return self.api.getConfigValue(name)
+  
+  def saveAllConfig(self):
+    d={}
+    defaults=self.pluginInfo()['config']
+    for cf in defaults:
+      v=self.getConfigValue(cf.get('name'))
+      d.update({cf.get('name'):v})
+    self.api.saveConfigValues(d)
+    return 
+  
+  def changeConfig(self,newValues):
+    self.api.saveConfigValues(newValues)
   
   def changeParam(self, param):
     self.api.saveConfigValues(param)
@@ -150,7 +208,6 @@ class Plugin(object):
     computePeriod=0.5
     while not self.api.shouldStopMainThread():
       if startSequence != self.startSequence:
-        self.config = Config(self.api)
         try:
           computePeriod = float(self.api.getConfigValue('computePeriod', 0.5))
         except:
