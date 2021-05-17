@@ -152,8 +152,6 @@ STW (Spead through Water) is taken from \$VHW.
 
 - The Signalk-Plugin "sk-to-nmea0183" has some bugs:
 
-It transmits this message only if Heading und magnetic Variation Data are available in Signalk.
- 
 - \$VHW false : see https://github.com/SignalK/signalk-to-nmea0183/issues/63
 
 - \$HDG  false : Deviation instead of Variation
