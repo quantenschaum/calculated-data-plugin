@@ -187,5 +187,4 @@ For a simple package building [NFPM](https://nfpm.goreleaser.com/) is used and s
 Additionally a [GitHub workflow](.github/workflows/createPackage.yml) has been set up to create a release and build a package whenever you push to the release branch.
 
 So when you fork this repository you can create a package even without a local environment.
-
-To trigger a package build at GitHub after forking just create a release branch and push this.**content****content**
+To trigger a package build at GitHub after forking just create a release branch and push this.
