@@ -152,6 +152,7 @@ class Plugin(object):
     self.userAppId = None
     self.startSequence = 0
     self.receivedTags = []
+    self.source=self.api.getConfigValue("sourceName",None)
     self.saveAllConfig()
     
   def stop(self):
