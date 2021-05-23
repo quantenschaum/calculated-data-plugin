@@ -10,7 +10,7 @@ This project provides a plugin for AvNav to calculate additional (hopefully) use
 
 Basically this plugin uses the [AvNav Plugin Interface](https://www.wellenvogel.net/software/avnav/docs/hints/plugins.html?lang=en).
 
-It calculates the Magnetic Variation at the actual position based on the World Magnetic Model 2020 of [NOAA]([https://www.ngdc.noaa.gov/](https://www.ngdc.noaa.gov/)) 
+It calculates the Magnetic Variation at the actual position based on the World Magnetic Model 2020 of [NOAA](https://www.ngdc.noaa.gov/) 
  
 If there are APPARENT" Winddata in the NMEA input stream it calculates:
 ·  
