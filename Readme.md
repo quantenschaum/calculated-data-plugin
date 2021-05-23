@@ -8,14 +8,11 @@ This project provides a plugin for AvNav to calculate additional (hopefully) use
 
 
 
-Basically this software uses the [AvNav Plugin Interface](https://www.wellenvogel.net/software/avnav/docs/hints/plugins.html?lang=en)
+Basically this plgin uses the [AvNav Plugin Interface](https://www.wellenvogel.net/software/avnav/docs/hints/plugins.html?lang=en).
 
-to calculate the Magnetic Variation on the actual position
-
- (based on the World Magnetic Model 2020 of [NOAA]([https://www.ngdc.noaa.gov/](https://www.ngdc.noaa.gov/)) )
+It calculates the Magnetic Variation at the actual position based on the World Magnetic Model 2020 of [NOAA]([https://www.ngdc.noaa.gov/](https://www.ngdc.noaa.gov/)) 
  
-if the internal data store in AvNav contains apparent Winddata ("gps.windReference"=="R", Windangle "gps.windAngle" and Windspeed "gps.WindSpeed") it calculates:
-
+If there are APPARENT" Winddata in the NMEA input stream it calculates:
 ·  
 
 | Value | Format | Storename | Description |
@@ -31,18 +28,17 @@ if the internal data store in AvNav contains apparent Winddata ("gps.windReferen
 
 · 
 
-in case of true Winddata ("gps.windReference"=="T") **no** calculation of winddata is done!
+In case of "TRUE" Winddata **no** calculation is done, because True winddata are not very likely on boats!  
+(If there is interest in calculation of Apparent Wind-Data from TRUE, please leave a message in [Issues](https://github.com/kdschmidt1/avnav-more-nmea-plugin/issues))
 
-in adition it listens for incoming NMEA records regarding course and speed.
+In adition the plugin listens for incoming NMEA records regarding course and speed.
 
-if NMEA records with course data are received (\$HDM or \$HDG or \$VHW) it calculates:
+If NMEA records with course data are received (\$HDM or \$HDG or \$VHW) it calculates:
 
 | Value | Format | Storename | Description |
 | --- | --- | --- | --- |
 | HDGm | +/- 180 [°] | gps.HDGm | Heading magnetic |
 | HDGt | +/- 180 [°] | gps.HDGt | Heading true |
-
-
 
 in case of $VHW records it will also create 
 
@@ -51,9 +47,13 @@ in case of $VHW records it will also create 
 | STW | 0..∞ [m/s] | gps.STW | Speed through water |
 
 
-**NEW**
-Since Release 20210517 the Plugin is able to create the following NMEA records: **\$MWD,** **\$MWV,** **\$HDT,** **\$HDM and** **\$HDG**. These are are available i.e. on the SocketWriter Ports. They are only transmitted if the necessary signals are available and if there are no record with the same name in the NMEA data stream.
-One can avoid to transmit a record by putting its name (i.e. “\$HDT”’) in the Filter_NMEA_OUT parameter.
+**NEW:**  
+Since Release 20210517 the Plugin is able to create the following NMEA records: **$MWD,** **$MWV,** **$HDT,** **$HDM and** **$HDG**. These messages are available i.e. on the SocketWriter Ports. 
+They will be transmitted only, if the necessary signals are available and if there is **no record with the same name** in the NMEA input data stream.  
+One can avoid to transmit a record by adding its name (i.e. “$HDT”’) to the "Filter_NMEA_OUT".  
+A special case are the records $HDG,  $MWV and $VHW because these messages have different meanings depending on their message content:  
+$HDG, $MVW can be either TRUE oder RELATIVE. In this case the plugin delivers the opposite TRUE oder RELATIVE Message, even if there is already a message with the same name in the input stream.  
+Based on $VHW the plugin also creates the corresponding $HDT or $HDM and $HDG messages, if they are not already in the input stream.
 
 The Plugin can be configured in the avnav-Server.xml with the following parmeters:
 
@@ -63,12 +63,11 @@ The Plugin can be configured in the avnav-Server.xml with the following parmeter
 | WMM_PERIOD | "10" | Intervall (sec) to calculate Variation |
 | NMEAPeriod | “1” | Intervall (sec) to transmit new NMEA-records |
 | computePeriod | "0.5” | Intervall (sec) to read NMEA-records |
-| FILTER_NMEA_OUT | “” | Filter for transmitting new NMEA-records |
+| FILTER_NMEA_OUT | “” | Filter for transmitted new NMEA-records |
 
 
 
-Please report any Errors to my [Repository](https://github.com/kdschmidt1/avnav-more-nmea-plugin/issues)
-
+Please report any Errors to [Issues](https://github.com/kdschmidt1/avnav-more-nmea-plugin/issues)
 
 License: [MIT](LICENSE.md)
 
@@ -146,31 +145,23 @@ To display values in a proper unit the necessary formatters are included in the 
 
 
 
-STW (Spead through Water) is taken from \$VHW.
-
 **Take care for NMEA200 Sources: **
 
-- The Signalk-Plugin "sk-to-nmea0183" has some bugs:
+The Signalk-Plugin "sk-to-nmea0183" has some bugs:
 
-- \$VHW false : see https://github.com/SignalK/signalk-to-nmea0183/issues/63
+- $VHW : see https://github.com/SignalK/signalk-to-nmea0183/issues/63
 
-- \$HDG  false : Deviation instead of Variation
+- $HDG : Mixed Deviation and Variation
 
-
-
-- the sentences from canboat are ok, as far as tested!
+The sentences from canboat are ok, as far as tested!
 
 
 
-HDGt (Heading True) is calculated from HDGm (Heading magnetic from \$HDM or \$HDG or \$VHW) taking into account the magnetic variation if no True Heading Data is received.
-
-
+HDGt (Heading True) is calculated from HDGm (Heading magnetic from $HDM or $HDG or $VHW) taking into account the magnetic variation if no True Heading Data is received.
 
 Receiving True Heading overwrites calculated Data!
 
-
-
-If magnetic variation is received (by \$VHW or \$HDG) the calculated variation is no more used!
+If magnetic variation is received (by $HDG) inside the "WMM_PERIOD" -time this value is taken into account.
 
              
 

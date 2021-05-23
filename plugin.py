@@ -41,8 +41,9 @@ class Plugin(object):
   PATHGMM = "gps.MagVar"
   WMM_FILE = 'WMM2020.COF'
   OWNID = 'IN'
-  outFilter = [] 
-  FILTER = ['$HDG','$HDM','$HDT','$VHW', 'MWD', 'MWV','VWR']
+  outFilter = []
+ 
+  FILTER = ['$HDG','$HDM','$HDT','$VHW', '$MWD', '$MWV','$VWR']
   #FILTER = []
   CONFIG = [
       {
@@ -238,8 +239,7 @@ class Plugin(object):
         else:
           waitTime = 0.01
           runNext = True
-        self.variation_FromSensor = False
-        seq, data = self.api.fetchFromQueue(seq, number=10, waitTime=waitTime, includeSource=True,filter=self.FILTER)
+        seq, data = self.api.fetchFromQueue(seq, number=100, waitTime=waitTime, includeSource=True,filter=self.FILTER)
         if len(data) > 0:
           for line in data:
             if not self.api.prefix in line.source : # KEINE Auswertung von selbst erzeugten Daten!!
@@ -248,17 +248,16 @@ class Plugin(object):
       gpsdata = self.api.getDataByPrefix('gps')
 
 
-      if 'windSpeed' in gpsdata:
+      if 'AWA' in gpsdata:
+        computesApparentWind = True
         computesWind = True
-        if gpsdata['windReference'] == 'R':
-            computesWind = True
-            if (self.calcTrueWind(gpsdata)):
-                self.api.addData(self.PATHAWA, gpsdata['AWA'])
-                self.api.addData(self.PATHAWD, gpsdata['AWD'])
-                self.api.addData(self.PATHAWS, gpsdata['AWS'])
-                self.api.addData(self.PATHTWD, gpsdata['TWD'])
-                self.api.addData(self.PATHTWS, gpsdata['TWS'])
-                self.api.addData(self.PATHTWA, gpsdata['TWA'])
+        if (self.calcTrueWind(gpsdata)):
+            self.api.addData(self.PATHAWA, gpsdata['AWA'])
+            self.api.addData(self.PATHAWD, gpsdata['AWD'])
+            self.api.addData(self.PATHAWS, gpsdata['AWS'])
+            self.api.addData(self.PATHTWD, gpsdata['TWD'])
+            self.api.addData(self.PATHTWS, gpsdata['TWS'])
+            self.api.addData(self.PATHTWA, gpsdata['TWA'])
       if computesVar or computesWind:
         stText = 'computing '
         if computesVar:
@@ -274,44 +273,67 @@ class Plugin(object):
           lastnmea = now
 
   def write_NMEA_records(self, gpsdata):
-    if('TWA' in gpsdata and 'AWA' in gpsdata):  # empfange scheinbare Winddaten
+    #for testing:
+    #self.receivedTags.sort()
+    #print ("Received: "+self.receivedTags.__len__().__str__()+self.receivedTags.__str__())
+
+    rectags = []
+    rectags = self.receivedTags
+    try:
         # $MWD = TWD & TWS          
         if not ('MWD' in self.receivedTags):
-            if('MagVar' in gpsdata):
-                s = self.make_sentence('MWD', gpsdata['TWD'], 'T', gpsdata['TWD'] - gpsdata['MagVar'], 'M', gpsdata['TWS'] * 1.94384, 'N', gpsdata['TWS'], 'M')
-            else:
-                s = self.make_sentence('MWD', gpsdata['TWD'], 'T', '', 'M', gpsdata['TWS'] * 1.94384, 'N', gpsdata['TWS'], 'M')
-            if NMEAParser.checkFilter(s, self.outFilter):
-                self.api.addNMEA(s, addCheckSum=True)
-        # $MWV = TWA & TWS (T),  AWA & AWS (R)
-        # MWV (T)
-        if not ('MWV' in self.receivedTags):
-            s = self.make_sentence('MWV', gpsdata['TWA'], 'T', gpsdata['TWS'], 'M')
-            if NMEAParser.checkFilter(s, self.outFilter):
-                self.api.addNMEA(s, addCheckSum=True)
-        # MWV (R)
-            s = self.make_sentence('MWV', gpsdata['AWA'], 'R', gpsdata['AWS'], 'R')
-            # self.api.addNMEA(s, addCheckSum=True)
+            if('TWD' in gpsdata and 'TWS' in gpsdata): 
+                if('MagVar' in gpsdata):
+                    s = self.make_sentence('MWD', gpsdata['TWD'], 'T', gpsdata['TWD'] - gpsdata['MagVar'], 'M', gpsdata['TWS'] * 1.94384, 'N', gpsdata['TWS'], 'M')
+                else:
+                    s = self.make_sentence('MWD', gpsdata['TWD'], 'T', '', 'M', gpsdata['TWS'] * 1.94384, 'N', gpsdata['TWS'], 'M')
+                if NMEAParser.checkFilter(s, self.outFilter):
+                    self.api.addNMEA(s, addCheckSum=True)
 
-        if('HDGt' in gpsdata):
-            if not ('HDM' in self.receivedTags):
-                if('HDGm' in gpsdata):
-                    s = self.make_sentence('HDM', gpsdata['HDGm'], 'M')              
-                    if NMEAParser.checkFilter(s, self.outFilter):
-                        self.api.addNMEA(s, addCheckSum=True)
-            if not ('HDT' in self.receivedTags):
+
+        if not ('MWV-T' in self.receivedTags):
+            if('TWA' in gpsdata and 'TWS' in gpsdata): 
+                s = self.make_sentence('MWV', gpsdata['TWA'], 'T', gpsdata['TWS'], 'M','A')
+                if NMEAParser.checkFilter(s, self.outFilter):
+                    self.api.addNMEA(s, addCheckSum=True)
+
+        if not ('MWV-R' in self.receivedTags):
+            if('AWA' in gpsdata and 'AWS' in gpsdata): 
+                s = self.make_sentence('MWV', gpsdata['AWA'], 'R', gpsdata['AWS'], 'M','A')
+                if NMEAParser.checkFilter(s, self.outFilter):
+                    self.api.addNMEA(s, addCheckSum=True)
+
+        if not ('HDM' in self.receivedTags):
+            if('HDGm' in gpsdata):
+                s = self.make_sentence('HDM', gpsdata['HDGm'], 'M')              
+                if NMEAParser.checkFilter(s, self.outFilter):
+                    self.api.addNMEA(s, addCheckSum=True)
+                    
+                    
+        if not ('HDT' in self.receivedTags):
+            if('HDGt' in gpsdata):
                 s = self.make_sentence('HDT', gpsdata['HDGt'], 'T')              
                 if NMEAParser.checkFilter(s, self.outFilter):
-                   self.api.addNMEA(s, addCheckSum=True)
-            if not ('HDG' in self.receivedTags):
+                    self.api.addNMEA(s, addCheckSum=True)
+            
+            
+        if not ('HDG' in self.receivedTags):
+            if('HDGm' in gpsdata):
                 if('MagVar' in gpsdata):
-                    s = self.make_sentence('HDG', gpsdata['HDGt'] - gpsdata['MagVar'], '', '', gpsdata['MagVar'], 'E')
-                    if NMEAParser.checkFilter(s, self.outFilter):
-                        self.api.addNMEA(s, addCheckSum=True)
-                elif('HDGm' in gpsdata):
+                    s = self.make_sentence('HDG', gpsdata['HDGm'], '', '', gpsdata['MagVar'], 'E')      
+                else:
                     s = self.make_sentence('HDG', gpsdata['HDGm'], '', '', '', '')      
-                    if NMEAParser.checkFilter(s, self.outFilter):
-                        self.api.addNMEA(s, addCheckSum=True)
+                if NMEAParser.checkFilter(s, self.outFilter):
+                    self.api.addNMEA(s, addCheckSum=True)
+            elif('HDGt' in gpsdata and'MagVar' in gpsdata):
+                s = self.make_sentence('HDG', gpsdata['HDGt'] - gpsdata['MagVar'], '', '', gpsdata['MagVar'], 'E')
+                if NMEAParser.checkFilter(s, self.outFilter):
+                    self.api.addNMEA(s, addCheckSum=True)
+    except Exception:
+        self.api.error(" error in NMEA writing")
+
+
+
       
   def make_sentence(self, title, *keys):
       s = '$' + self.OWNID + title
@@ -342,6 +364,7 @@ class Plugin(object):
       self.api.error("invalid nmea data (len<1) " + data + " - ignore")
       return False
     tag = darray[0][3:]
+    if not tag in self.receivedTags:self.receivedTags.append(tag)
     rt = {}
     if(darray[0][1:3] == self.OWNID):
         test=3 # hier ist etwas schiefgelaufen
@@ -373,10 +396,12 @@ class Plugin(object):
         rt['dir'] = darray[2] or ''
         if rt['dir']=='L':
             rt['AWA']=-rt['AWA']
-        rt['AWA'] = self.LimitWinkel(rt['AWA'])
         if(len(darray[5]) > 0): rt['AWS'] = float(darray[5])
         elif(len(darray[3]) > 0): rt['AWS'] = float(darray[3])* 0.514444    # speed kn-> m/s
         elif(len(darray[7]) > 0): rt['AWS'] = float(darray[7])/3.6    # speed km/h -> m/s
+        if('AWA' in rt):self.api.addData(self.PATHAWA, self.LimitWinkel(rt['AWA']))
+        if('AWS' in rt):self.api.addData(self.PATHAWS, rt['AWS'])
+        return(True)
  
  
  
@@ -406,11 +431,12 @@ class Plugin(object):
             if(rt['relortrue']=='R'):
                 rt['AWA'] = self.LimitWinkel(float(darray[1] or '0'))
                 rt['AWS'] = float(darray[3] or '0')
+                if not (tag + '-R') in self.receivedTags:self.receivedTags.append(tag+'-R')
             else:
                 rt['AWA'] = self.LimitWinkel(float(darray[1] or '0'))
                 rt['TWS'] = float(darray[3] or '0')
+                if not (tag + '-T') in self.receivedTags:self.receivedTags.append(tag+'-T')
             rt['speedunit'] = darray[4] or ''
-            #self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading']))
             if('AWA' in rt):self.api.addData(self.PATHAWA, rt['AWA'])
             if('AWS' in rt):self.api.addData(self.PATHAWS, rt['AWS'])
             if('TWA' in rt):self.api.addData(self.PATHTWA, rt['TWA'])
@@ -478,7 +504,7 @@ class Plugin(object):
             heading_m = heading_m + rt['MagDeviation']
         elif('MagDevDir' in rt and rt['MagDevDir'] == 'W'): 
             heading_m = heading_m - rt['MagDeviation']
-        self.receivedTags.append(tag + '-M')
+        if not (tag + '-M') in self.receivedTags:self.receivedTags.append(tag + '-M')
         self.api.addData(self.PATHHDG_M, self.LimitWinkel(heading_m))
         # Wahrer Kurs unter Berücksichtigung der Missweisung
         heading_t = None
@@ -542,8 +568,7 @@ class Plugin(object):
         if(len(darray[3]) > 0): 
             rt['Heading-M'] = float(darray[3] or '0')  # Heading magnetic
             self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading-M']))
-            if not (tag + '-R') in self.receivedTags: 
-                self.receivedTags.append(tag + '-R')
+            if not (tag + '-R') in self.receivedTags:self.receivedTags.append(tag + '-R')
             if(len(darray[1]) == 0 and self.variation_val is not None):    # keinTRUE-Heading empfangen
                 self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading'] + self.variation_val))
         if(len(darray[7]) > 0):  # Speed of vessel relative to the water, km/hr 
