@@ -153,6 +153,7 @@ class Plugin(object):
     self.userAppId = None
     self.startSequence = 0
     self.receivedTags = []
+    self.WindData = []
     self.source=self.api.getConfigValue("sourceName",None)
     self.saveAllConfig()
     
@@ -399,8 +400,12 @@ class Plugin(object):
         if(len(darray[5]) > 0): rt['AWS'] = float(darray[5])
         elif(len(darray[3]) > 0): rt['AWS'] = float(darray[3])* 0.514444    # speed kn-> m/s
         elif(len(darray[7]) > 0): rt['AWS'] = float(darray[7])/3.6    # speed km/h -> m/s
-        if('AWA' in rt):self.api.addData(self.PATHAWA, self.LimitWinkel(rt['AWA']))
-        if('AWS' in rt):self.api.addData(self.PATHAWS, rt['AWS'])
+        if('AWA' in rt):
+            self.api.addData(self.PATHAWA, self.LimitWinkel(rt['AWA']))
+            self.WindData.append('AWA')
+        if('AWS' in rt):
+            self.api.addData(self.PATHAWS, rt['AWS'])
+            self.WindData.append('AWS')
         return(True)
  
  
@@ -437,10 +442,18 @@ class Plugin(object):
                 rt['TWS'] = float(darray[3] or '0')
                 if not (tag + '-T') in self.receivedTags:self.receivedTags.append(tag+'-T')
             rt['speedunit'] = darray[4] or ''
-            if('AWA' in rt):self.api.addData(self.PATHAWA, rt['AWA'])
-            if('AWS' in rt):self.api.addData(self.PATHAWS, rt['AWS'])
-            if('TWA' in rt):self.api.addData(self.PATHTWA, rt['TWA'])
-            if('TWS' in rt):self.api.addData(self.PATHTWS, rt['TWS'])
+            if('AWA' in rt):
+                self.api.addData(self.PATHAWA, rt['AWA'])
+                self.WindData.append('AWA')
+            if('AWS' in rt):
+                self.api.addData(self.PATHAWS, rt['AWS'])
+                self.WindData.append('AWS')
+            if('TWA' in rt):
+                self.api.addData(self.PATHTWA, rt['TWA'])
+                self.WindData.append('TWA')
+            if('TWS' in rt):
+                self.api.addData(self.PATHTWS, rt['TWS'])
+                self.WindData.append('TWS')
         return True
     
     
@@ -466,8 +479,12 @@ class Plugin(object):
                  rt['TWS'] = float(darray[5] or '0')*0.51444
         if(len(darray[3]) > 0): rt['TWDmag'] = float(darray[3] or '0')
         if(len(darray[1]) > 0): rt['TWD'] = float(darray[1] or '0')
-        if('TWD' in rt):self.api.addData(self.PATHTWD, rt['TWD'])
-        if('TWS' in rt):self.api.addData(self.PATHTWS, rt['TWS'])
+        if('TWD' in rt):
+            self.api.addData(self.PATHTWD, rt['TWD'])
+            self.WindData.append('TWD')
+        if('TWS' in rt):
+            self.api.addData(self.PATHTWS, rt['TWS'])
+            self.WindData.append('TWS')
         return True
 
 
@@ -596,7 +613,8 @@ class Plugin(object):
         if not 'track' in gpsdata or not 'AWA' in gpsdata:
             return False
         try:
-            if(not 'AWD' in gpsdata): gpsdata['AWD'] = (gpsdata['AWA'] + gpsdata['track']) % 360
+            if(not 'AWD' in self.WindData): 
+                gpsdata['AWD'] = (gpsdata['AWA'] + gpsdata['track']) % 360
             KaW = self.toKartesisch(gpsdata['AWD'])
             KaW['x'] *= gpsdata['AWS']  # 'm/s'
             KaW['y'] *= gpsdata['AWS']  # 'm/s'
@@ -605,13 +623,17 @@ class Plugin(object):
             KaB['y'] *= gpsdata['speed']  # 'm/s'
 
             if(gpsdata['speed'] == 0 or gpsdata['AWS'] == 0):
-                if(not 'TWD' in gpsdata): gpsdata['TWD'] = gpsdata['AWD'] 
+                if(not 'TWD' in self.WindData):
+                     gpsdata['TWD'] = gpsdata['AWD'] 
             else:
                 test= (self.toPolWinkel(KaW['x'] - KaB['x'], KaW['y'] - KaB['y'])) % 360
-                if(not 'TWD' in gpsdata): gpsdata['TWD'] = (self.toPolWinkel(KaW['x'] - KaB['x'], KaW['y'] - KaB['y'])) % 360
+                if(not 'TWD' in self.WindData):
+                     gpsdata['TWD'] = (self.toPolWinkel(KaW['x'] - KaB['x'], KaW['y'] - KaB['y'])) % 360
 
-            if(not 'TWS' in gpsdata): gpsdata['TWS'] = math.sqrt((KaW['x'] - KaB['x']) * (KaW['x'] - KaB['x']) + (KaW['y'] - KaB['y']) * (KaW['y'] - KaB['y']))
-            if(not 'TWA' in gpsdata): gpsdata['TWA'] = self.LimitWinkel(gpsdata['TWD'] - gpsdata['track'])
+            if(not 'TWS' in self.WindData):
+                 gpsdata['TWS'] = math.sqrt((KaW['x'] - KaB['x']) * (KaW['x'] - KaB['x']) + (KaW['y'] - KaB['y']) * (KaW['y'] - KaB['y']))
+            if(not 'TWA' in self.WindData):
+                 gpsdata['TWA'] = self.LimitWinkel(gpsdata['TWD'] - gpsdata['track'])
 
             return True
         except Exception:

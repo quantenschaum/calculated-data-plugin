@@ -12,7 +12,7 @@ Basically this plugin uses the [AvNav Plugin Interface](https://www.wellenvogel.
 
 It calculates the Magnetic Variation at the actual position based on the World Magnetic Model 2020 of [NOAA](https://www.ngdc.noaa.gov/) 
  
-If there are APPARENT" Winddata in the NMEA input stream it calculates:
+If there are "APPARENT" Winddata in the NMEA input stream it calculates:
 ·  
 
 | Value | Format | Storename | Description |
@@ -149,9 +149,9 @@ To display values in a proper unit the necessary formatters are included in the 
 
 The Signalk-Plugin "sk-to-nmea0183" has some bugs:
 
-- $VHW : see https://github.com/SignalK/signalk-to-nmea0183/issues/63
+- $VHW : see <https://github.com/SignalK/signalk-to-nmea0183/issues/63>
 
-- $HDG : Mixed Deviation and Variation
+- $HDG : Swapped Deviation and Variation see <https://github.com/SignalK/signalk-to-nmea0183/issues/71>
 
 The sentences from canboat are ok, as far as tested!
 
