@@ -432,16 +432,22 @@ class Plugin(object):
 
         rt['status'] = darray[5] or ''
         if(rt['status'] == 'A'): # valid:
+            rt['speedunit'] = darray[4] or ''
+            if(rt['speedunit']=='M'):    
+                rt['speed'] = float(darray[3] or '0')
+            elif(rt['speedunit']=='K'):
+                rt['speed'] = float(darray[3] or '0')/3.6
+            elif(rt['speedunit']=='N'):
+                rt['speed'] = float(darray[3] or '0')*0,514444
             rt['relortrue'] = darray[2] or ''
             if(rt['relortrue']=='R'):
+                rt['AWS'] = rt['speed']
                 rt['AWA'] = self.LimitWinkel(float(darray[1] or '0'))
-                rt['AWS'] = float(darray[3] or '0')
                 if not (tag + '-R') in self.receivedTags:self.receivedTags.append(tag+'-R')
             else:
-                rt['AWA'] = self.LimitWinkel(float(darray[1] or '0'))
-                rt['TWS'] = float(darray[3] or '0')
+                rt['TWA'] = self.LimitWinkel(float(darray[1] or '0'))
+                rt['TWS'] = rt['speed']
                 if not (tag + '-T') in self.receivedTags:self.receivedTags.append(tag+'-T')
-            rt['speedunit'] = darray[4] or ''
             if('AWA' in rt):
                 self.api.addData(self.PATHAWA, rt['AWA'])
                 self.WindData.append('AWA')
@@ -508,7 +514,7 @@ class Plugin(object):
         if(len(darray[1]) > 0):rt['SensorHeading'] = float(darray[1] or '0') 
         if(len(darray[2]) > 0): 
             rt['MagDeviation'] = float(darray[2] or '0')  # --> Ablenkung
-            if(len(darray[2]) > 0):rt['MagDevDir'] = darray[3] or 'X'
+            if(len(darray[3]) > 0):rt['MagDevDir'] = darray[3] or 'X'
         if(len(darray[4]) > 0): 
             rt['MagVariation'] = float(darray[4] or '0')  # --> Missweisung
             if(len(darray[5]) > 0):rt['MagVarDir'] = darray[5] or 'X'
@@ -654,3 +660,4 @@ class Plugin(object):
         K['x'] = math.cos((alpha * math.pi) / 180)
         K['y'] = math.sin((alpha * math.pi) / 180)
         return(K)    
+
