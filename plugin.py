@@ -207,7 +207,7 @@ class Plugin(object):
               wmm_filename = os.path.join(os.path.dirname(__file__) + '/lib', self.getConfigValue('WMM_FILE'))
               gm = geomag.GeoMag(wmm_filename)
         except:
-          self.api.error(" WMM-File " + wmm_filename + 'nicht gefunden!')
+          self.api.error(" WMM-File " + wmm_filename + 'not found!')
       lastTime = time.time()
       gpsdata = {}
       computesVar = False
