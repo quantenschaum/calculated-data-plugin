@@ -56,7 +56,7 @@ One can avoid to transmit a specific record by adding its name as inverse (i.e. 
 A special case are the records $HDG,  $MWV and $VHW because these messages have different meanings depending on their message content:  
 $HDG, $MVW can be either TRUE oder RELATIVE. In this case the plugin delivers the opposite TRUE oder RELATIVE Message, even if there is already a message with the same name in the input stream.  
 Based on $VHW the plugin also creates the corresponding $HDT or $HDM and $HDG messages, if they are not already in the input stream.  
-If case of feeding back the avnav-nmea records to signalk, you should add the sourceName Parameter (i.e. "more_nmea") to the blackList of the "nmea0183tosignalk"-AVNSocketWriter in avnav_server.xml to avoid creating a loop.
+If case of feeding back the avnav-nmea records to signalk, you should add the sourceName Parameter (i.e. "more_nmea") to the blackList of the AVNSocketWriter that is used in signalk for receiving data from avnav in the avnav_server.xml to avoid creating a loop.
 
 The Plugin can be configured in the avnav-Server.xml with the following parmeters:
 
