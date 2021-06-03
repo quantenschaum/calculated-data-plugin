@@ -251,7 +251,7 @@ class Plugin(object):
       gpsdata = self.api.getDataByPrefix('gps')
 
 
-      if 'AWA' in gpsdata:
+      if 'AWA' in self.WindData:
         computesApparentWind = True
         computesWind = True
         if (self.calcTrueWind(gpsdata)):
