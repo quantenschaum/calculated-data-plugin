@@ -50,10 +50,13 @@ in case of $VHW records it will also create 
 **NEW:**  
 Since Release 20210517 the Plugin is able to create the following NMEA records: **$MWD,** **$MWV,** **$HDT,** **$HDM and** **$HDG**. These messages are available i.e. on the SocketWriter Ports. 
 They will be transmitted only, if the necessary signals are available and if there is **no record with the same name** in the NMEA input data stream.  
-One can avoid to transmit a record by adding its name (i.e. “$HDT”’) to the "Filter_NMEA_OUT".  
+One can explicitly declare which records to be sent by using the FILTER_NMEA_OUT Parameter (i.e. “$HDT,$MWV" to transmit only these two).
+If the "Filter_NMEA_OUT" is empty, all records are transmitted.  
+One can avoid to transmit a specific record by adding its name as inverse (i.e. “^$HDT”) to the "Filter_NMEA_OUT".   
 A special case are the records $HDG,  $MWV and $VHW because these messages have different meanings depending on their message content:  
 $HDG, $MVW can be either TRUE oder RELATIVE. In this case the plugin delivers the opposite TRUE oder RELATIVE Message, even if there is already a message with the same name in the input stream.  
-Based on $VHW the plugin also creates the corresponding $HDT or $HDM and $HDG messages, if they are not already in the input stream.
+Based on $VHW the plugin also creates the corresponding $HDT or $HDM and $HDG messages, if they are not already in the input stream.  
+If case of feeding back the avnav-nmea records to signalk, you should add the sourceName Parameter (i.e. "more_nmea") to the blackList of the "nmea0183tosignalk"-AVNSocketWriter in avnav_server.xml to avoid creating a loop.
 
 The Plugin can be configured in the avnav-Server.xml with the following parmeters:
 
@@ -64,6 +67,7 @@ The Plugin can be configured in the avnav-Server.xml with the following parmeter
 | NMEAPeriod | “1” | Intervall (sec) to transmit new NMEA-records |
 | computePeriod | "0.5” | Intervall (sec) to read NMEA-records |
 | FILTER_NMEA_OUT | “” | Filter for transmitted new NMEA-records |
+| sourceName | “more_nmea” | source name to be set for the generated records |
 
 
 
