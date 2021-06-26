@@ -448,7 +448,7 @@ class Plugin(object):
             elif(rt['speedunit']=='K'):
                 rt['speed'] = float(darray[3] or '0')/3.6
             elif(rt['speedunit']=='N'):
-                rt['speed'] = float(darray[3] or '0')*0,514444
+                rt['speed'] = float(darray[3] or '0')*0.514444
             rt['relortrue'] = darray[2] or ''
             if(rt['relortrue']=='R'):
                 rt['AWS'] = rt['speed']
