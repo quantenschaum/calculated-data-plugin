@@ -37,8 +37,8 @@ If NMEA records with course data are received (\$HDM or \$HDG or \$VHW) it calcu
 
 | Value | Format | Storename | Description |
 | --- | --- | --- | --- |
-| HDGm | +/- 180 [°] | gps.HDGm | Heading magnetic |
-| HDGt | +/- 180 [°] | gps.HDGt | Heading true |
+| HDGm | 0…360 [°] | gps.HDGm | Heading magnetic |
+| HDGt | 0…360 [°] | gps.HDGt | Heading true |
 
 in case of $VHW records it will also create 
 
