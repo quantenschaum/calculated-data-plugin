@@ -17,12 +17,12 @@ If there are "APPARENT" Winddata in the NMEA input stream it calculates:
 
 | Value | Format | Storename | Description |
 | --- | --- | --- | --- |
-| MagVar | 0…360[°] | gps.MagVar | Magnetic Variation |
+| MagVar | +/- 180 [°] | gps.MagVar | Magnetic Variation |
 | AWA | +/- 180 [°] | gps.AWA | Apparent WindAngle |
-| AWD | 0…360[°] | gps.AWD | Apparent WindDirection |
+| AWD | 0…360 [°] | gps.AWD | Apparent WindDirection |
 | AWS | 0..∞ [m/s] | gps.AWS | Apparent WindSpeed |
 | TWA | +/- 180 [°] | gps.TWA | True WindAngle |
-| TWD | 0…360[°] | gps.TWD | True WindDirection |
+| TWD | 0…360 [°] | gps.TWD | True WindDirection |
 | TWS | 0..∞ [m/s] | gps.TWS | True WindSpeed |
 |  |  |  |  |
 
