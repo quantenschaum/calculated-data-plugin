@@ -649,7 +649,7 @@ class Plugin(object):
             if(not 'TWS' in self.WindData):
                  gpsdata['TWS'] = math.sqrt((KaW['x'] - KaB['x']) * (KaW['x'] - KaB['x']) + (KaW['y'] - KaB['y']) * (KaW['y'] - KaB['y']))
             if(not 'TWA' in self.WindData):
-                 gpsdata['TWA'] = self.LimitWinkel(gpsdata['TWD'] - gpsdata['track'],360)
+                 gpsdata['TWA'] = self.LimitWinkel(gpsdata['TWD'] - gpsdata['track'],180)
 
             return True
         except Exception:
