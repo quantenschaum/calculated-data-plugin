@@ -1,4 +1,4 @@
- # software includes geomag.py
+# software includes geomag.py
 # by Christopher Weiss cmweiss@gmail.com
 # https://github.com/cmweiss/geomag
 # Infos on NMEA0183 from:
@@ -325,7 +325,7 @@ class Plugin(object):
             if('HDGt' in gpsdata):
                 s = self.make_sentence('HDT', gpsdata['HDGt'], 'T')              
                 if NMEAParser.checkFilter(s, self.outFilter):
-                    self.api.addNMEA(s, addCheckSum=True,source=source)
+                    self.api.addNMEA(s, addCheckSum=True,source=source,omitDecode=False)
             
             
         if not ('HDG' in self.receivedTags):
@@ -411,7 +411,7 @@ class Plugin(object):
         elif(len(darray[3]) > 0): rt['AWS'] = float(darray[3])* 0.514444    # speed kn-> m/s
         elif(len(darray[7]) > 0): rt['AWS'] = float(darray[7])/3.6    # speed km/h -> m/s
         if('AWA' in rt):
-            self.api.addData(self.PATHAWA, self.LimitWinkel(rt['AWA']),source=source)
+            self.api.addData(self.PATHAWA, self.LimitWinkel(rt['AWA'],180),source=source)
             self.WindData.append('AWA')
         if('AWS' in rt):
             self.api.addData(self.PATHAWS, rt['AWS'],source=source)
@@ -452,10 +452,10 @@ class Plugin(object):
             rt['relortrue'] = darray[2] or ''
             if(rt['relortrue']=='R'):
                 rt['AWS'] = rt['speed']
-                rt['AWA'] = self.LimitWinkel(float(darray[1] or '0'))
+                rt['AWA'] = self.LimitWinkel(float(darray[1] or '0'),180)
                 if not (tag + '-R') in self.receivedTags:self.receivedTags.append(tag+'-R')
             else:
-                rt['TWA'] = self.LimitWinkel(float(darray[1] or '0'))
+                rt['TWA'] = self.LimitWinkel(float(darray[1] or '0'),180)
                 rt['TWS'] = rt['speed']
                 if not (tag + '-T') in self.receivedTags:self.receivedTags.append(tag+'-T')
             if('AWA' in rt):
@@ -538,7 +538,7 @@ class Plugin(object):
         elif('MagDevDir' in rt and rt['MagDevDir'] == 'W'): 
             heading_m = heading_m - rt['MagDeviation']
         if not (tag + '-M') in self.receivedTags:self.receivedTags.append(tag + '-M')
-        self.api.addData(self.PATHHDG_M, self.LimitWinkel(heading_m),source=source)
+        self.api.addData(self.PATHHDG_M, self.LimitWinkel(heading_m,360),source=source)
         # Wahrer Kurs unter Berücksichtigung der Missweisung
         heading_t = None
         if('MagVarDir' in rt):
@@ -552,7 +552,7 @@ class Plugin(object):
             self.api.addData(self.PATHGMM, self.variation_val,source=source)
         if heading_t is not None:
           self.receivedTags.append(tag + '-T')
-          self.api.addData(self.PATHHDG_T, self.LimitWinkel(heading_t),source=source)
+          self.api.addData(self.PATHHDG_T, self.LimitWinkel(heading_t,360),source=source)
         return True
 
       if tag == 'HDM' or tag == 'HDT':
@@ -561,13 +561,13 @@ class Plugin(object):
         if(len(darray[1]) > 0):rt['Heading'] = float(darray[1] or '0')
         rt['magortrue'] = darray[2]
         if(rt['magortrue'] == 'T'):
-          self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading']),source=source)
+          self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading'],360),source=source)
           if(self.variation_val):
-              self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading'] - self.variation_val),source=source)
+              self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading',360] - self.variation_val),source=source)
         else:
-          self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading']))
+          self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading'],360))
           if(self.variation_val):
-              self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading'] + self.variation_val),source=source)
+              self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading'] + self.variation_val,360),source=source)
         return True
 
 
@@ -595,15 +595,15 @@ class Plugin(object):
             self.receivedTags.append(tag)
         if(len(darray[1]) > 0):  # Heading True
             rt['Heading-T'] = float(darray[1] or '0')
-            self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading-T']),source=source)
+            self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading-T'],360),source=source)
             if not (tag + '-T') in self.receivedTags: 
                 self.receivedTags.append(tag + '-T')
         if(len(darray[3]) > 0): 
             rt['Heading-M'] = float(darray[3] or '0')  # Heading magnetic
-            self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading-M']),source=source)
+            self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading-M'],360),source=source)
             if not (tag + '-R') in self.receivedTags:self.receivedTags.append(tag + '-R')
             if(len(darray[1]) == 0 and self.variation_val is not None):    # keinTRUE-Heading empfangen
-                self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading'] + self.variation_val),source=source)
+                self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading'] + self.variation_val,360),source=source)
         if(len(darray[7]) > 0):  # Speed of vessel relative to the water, km/hr 
             rt['STW'] = float(darray[7] or '0')  # km/h
             rt['STW'] = rt['STW'] / 3.6  # m/s
@@ -649,17 +649,17 @@ class Plugin(object):
             if(not 'TWS' in self.WindData):
                  gpsdata['TWS'] = math.sqrt((KaW['x'] - KaB['x']) * (KaW['x'] - KaB['x']) + (KaW['y'] - KaB['y']) * (KaW['y'] - KaB['y']))
             if(not 'TWA' in self.WindData):
-                 gpsdata['TWA'] = self.LimitWinkel(gpsdata['TWD'] - gpsdata['track'])
+                 gpsdata['TWA'] = self.LimitWinkel(gpsdata['TWD'] - gpsdata['track'],180)
 
             return True
         except Exception:
             self.api.error(" error calculating TrueWind-Data " + str(gpsdata) + "\n")
         return False
     
-  def LimitWinkel(self, alpha):  # [grad]   
+  def LimitWinkel(self, alpha, limit):  # [grad]   
     alpha %= 360
-    if (alpha > 180): 
-        alpha -= 360;
+    if (alpha > limit): 
+        alpha -= 360
     return(alpha)  
 
   def toPolWinkel(self, x, y):  # [grad]
@@ -670,4 +670,3 @@ class Plugin(object):
         K['x'] = math.cos((alpha * math.pi) / 180)
         K['y'] = math.sin((alpha * math.pi) / 180)
         return(K)    
-
