@@ -563,7 +563,7 @@ class Plugin(object):
         if(rt['magortrue'] == 'T'):
           self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading'],360),source=source)
           if(self.variation_val):
-              self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading',360] - self.variation_val),source=source)
+              self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading'] - self.variation_val,360),source=source)
         else:
           self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading'],360))
           if(self.variation_val):
