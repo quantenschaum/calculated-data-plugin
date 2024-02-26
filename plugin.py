@@ -64,9 +64,10 @@ PATH_PREFIX = "gps.calculated."
 FILTER = ["$HDG", "$HDM", "$HDT", "$VHW", "$MWD", "$MWV", "$VWR"]
 PERIOD = "period"
 WMM_FILE = "wmm_file"
+WRITE = "nmea_write"
 NMEA_FILTER = "nmea_filter"
-PRIORITY = "priority"
-TALKER_ID = "talker_id"
+PRIORITY = "nmea_priority"
+TALKER_ID = "nmea_id"
 CONFIG = [
     {
         "name": PERIOD,
@@ -78,6 +79,12 @@ CONFIG = [
         "name": WMM_FILE,
         "description": "file with WMM-coefficents for magnetic deviation",
         "default": "WMM2020.COF",
+    },
+    {
+        "name": WRITE,
+        "description": "write NMEA",
+        "default": "True",
+        "type": "BOOLEAN",
     },
     {
         "name": NMEA_FILTER,
@@ -180,45 +187,42 @@ class Plugin(object):
         return self.variation
 
     def run(self):
-        # print("start")
-        self.api.setStatus("STARTED", "running")
-        wait = float(self.getConfigValue(PERIOD))
-        nmea_filter = self.getConfigValue(NMEA_FILTER)
-        nmea_priority = int(self.getConfigValue(PRIORITY))
-        ID = self.getConfigValue(TALKER_ID)
+        self.config_changed = True
         while not self.api.shouldStopMainThread():
-            # print("compute", time.monotonic())
+            if self.config_changed:
+                wait = float(self.getConfigValue(PERIOD))
+                nmea_write = self.getConfigValue(WRITE).startswith("T")
+                nmea_filter = self.getConfigValue(NMEA_FILTER).split(",")
+                nmea_priority = int(self.getConfigValue(PRIORITY))
+                ID = self.getConfigValue(TALKER_ID)
+                self.config_changed = False
 
             data = {k: self.readValue(p) for k, p in FIELDS.items()}
+            present = {k for k in data.keys() if data[k] is not None}
 
             if all(data.get(k) is not None for k in ("LAT", "LON")):
                 data["VAR"] = self.mag_variation(data["LAT"], data["LON"])
 
-            # print(data)
-            present = {k for k in data.keys() if data[k] is not None}
-
             data = CourseData(**data)
-            # print(data)
             calculated = {k for k in data.keys() if data[k] is not None}
             calculated -= present
-            # print("present", present)
-            # print("calculated", calculated)
 
             for k in data.keys():
                 self.writeValue(data, k, PATH_PREFIX + k)
 
             sending = set()
-            for f, s in SENTENCES.items():
-                if all(k in calculated for k in f.split(",")):
-                    s = eval(f"f'{s}'")
-                    if NMEAParser.checkFilter(s, nmea_filter):
-                        self.api.addNMEA(
-                            s,
-                            source=SOURCE,
-                            addCheckSum=True,
-                            sourcePriority=nmea_priority,
-                        )
-                    sending.add(s[:6])
+            if nmea_write:
+                for f, s in SENTENCES.items():
+                    if all(k in calculated for k in f.split(",")):
+                        s = eval(f"f'{s}'")
+                        if not nmea_filter or NMEAParser.checkFilter(s, nmea_filter):
+                            self.api.addNMEA(
+                                s,
+                                source=SOURCE,
+                                addCheckSum=True,
+                                sourcePriority=nmea_priority,
+                            )
+                            sending.add(s[:6])
 
             self.api.setStatus("NMEA", f"{present} --> {calculated} sending {sending}")
             time.sleep(wait)
