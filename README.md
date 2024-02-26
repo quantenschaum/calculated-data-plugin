@@ -1,4 +1,4 @@
-# Calulated Data Plugin for AvNav
+# Calculated Data Plugin for AvNav
 
 This plugin calculates wind and course data from the data that is supplied to AvNav.
 
