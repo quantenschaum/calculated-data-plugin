@@ -61,7 +61,6 @@ SENTENCES = {
 }
 
 PATH_PREFIX = "gps.calculated."
-FILTER = ["$HDG", "$HDM", "$HDT", "$VHW", "$MWD", "$MWV", "$VWR"]
 PERIOD = "period"
 WMM_FILE = "wmm_file"
 WRITE = "nmea_write"
