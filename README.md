@@ -4,7 +4,7 @@ This plugin calculates wind and course data from the data that is supplied to Av
 
 ## Calculated Data
 
-It calculates the Magnetic Variation at the actual position based on the [World Magnetic Model 2020](https://www.ngdc.noaa.gov/).
+It calculates the Magnetic Variation at the current position based on the [World Magnetic Model 2020](https://www.ngdc.noaa.gov/).
 Using this variation, it can calculate true heading from magnetic heading and vice-versa.
 
 If COG/SOG and HDT/STW are supplied, it will calculate set and drift SET/DFT.
