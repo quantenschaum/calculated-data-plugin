@@ -5,19 +5,19 @@
 name: "avnav-more-nmea-plugin"
 arch: "all"
 platform: "linux"
-version: "2021006"
+version: "20240226"
 keep_version: true
 section: "default"
 priority: "extra"
 depends:
-- avnav
+  - avnav
 maintainer: "Klaus D. Schmidt <kdschmidt@bluewin.ch>"
 description: |
   AvNav plugin to calculate derived data out of internal data or values
 homepage: ""
 license: "MIT"
 contents:
-- src: ./plugin.*
-  dst: /usr/lib/avnav/plugins/more-nmea/
-- src: ./lib/*
-  dst: /usr/lib/avnav/plugins/more-nmea/lib  
+  - src: ./plugin.*
+    dst: /usr/lib/avnav/plugins/more-nmea/
+  - src: ./lib/*
+    dst: /usr/lib/avnav/plugins/more-nmea/lib
