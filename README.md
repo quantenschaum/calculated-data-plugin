@@ -33,7 +33,7 @@ $$ CRS = HDT + LEE $$
 
 With leeway factor \$LEF = 0..20\$, boat specific
 
-### Course, Speed and Tide
+### Tide
 
 $$ [SET,DFT] = [COG,SOG] \oplus [CRS,-STW] $$
 
