@@ -38,11 +38,13 @@ $$ [SET,DFT] = [COG,SOG] \oplus [CRS,-STW] $$
 
 ### Wind
 
-angles and directions are always converted like \$xWD = xWA + HDT\$
+angles and directions are always converted like
 
 $$ [TWA,TWS] = [AWA,AWS] \oplus [LEE,-STW] $$
 
-$$ [GWD,GWS] = [AWD,AWS] \oplus [COG,-SOG] $$
+$$ TWD = TWA + HDT $$
+
+$$ [GWD,GWS] = [AWA+HDT,AWS] \oplus [COG,-SOG] $$
 
 ### Depth
 
