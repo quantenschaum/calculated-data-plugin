@@ -24,9 +24,9 @@
      inkscape:deskcolor="#505050"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="4"
-     inkscape:cx="426.125"
-     inkscape:cy="750.625"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="438.05265"
+     inkscape:cy="773.22126"
      inkscape:window-width="2537"
      inkscape:window-height="2091"
      inkscape:window-x="1018"
@@ -160,6 +160,14 @@
      inkscape:label="Ebene 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#ffffff;stroke:#4d4d4d;stroke-width:0.3;stroke-linecap:round;stroke-dasharray:1.2, 1.2;stroke-dashoffset:0;paint-order:stroke fill markers"
+       id="rect66930"
+       width="202.04616"
+       height="287.37863"
+       x="4.1109262"
+       y="5.4526572"
+       sodipodi:insensitive="true" />
     <g
        id="g20872"
        inkscape:transform-center-y="1.1725583"
