@@ -28,6 +28,7 @@ $$ HDT = HDM + VAR $$
 ### Leeway and Course
 
 $$ LEE = LEF \cdot HEL / STW^2 $$
+
 $$ CRS = HDT + LEE $$
 
 With leeway factor \$LEF = 0..20\$, boat specific
