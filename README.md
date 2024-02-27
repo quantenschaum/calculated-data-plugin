@@ -38,47 +38,48 @@ $$ [SET,DFT] = [COG,SOG] \oplus [CRS,-STW] $$
 
 ### Wind
 
-angles and directions are always converted like xWD = xWA + HDT and xWA = xWD - HDT
+angles and directions are always converted like \$xWD = xWA + HDT\$
 
-- [AWD,AWS] = [GWD,GWS] (+) [COG,SOG]
-- [AWD,AWS] = [TWD,TWS] (+) [CRS,STW]
-- [AWA,AWS] = [TWA,TWS] (+) [LEE,STW]
+$$ [TWA,TWS] = [AWA,AWS] \oplus [LEE,-STW] $$
+$$ [GWD,GWS] = [AWD,AWS] \oplus [COG,-SOG] $$
 
-- [TWD,TWS] = [GWD,GWS] (+) [SET,DFT]
-- [TWD,TWS] = [AWD,AWS] (+) [CRS,-STW]
-- [TWA,TWS] = [AWA,AWS] (+) [LEE,-STW]
+### Depth
 
-- [GWD,GWS] = [AWD,AWS] (+) [COG,-SOG]
+$$ DBS = DBT + DOT$$
+
+$$ DBK = DBS - DRT $$
 
 The \$\oplus\$ operator denotes the [addition of polar vectors](https://math.stackexchange.com/questions/1365622/adding-two-polar-vectors).
 
 ### Definitions
 
-HDG = heading, unspecified which of the following
-HDT = true heading, direction bow is pointing to, relative to true north (also HDGt)
-HDM = magnetic heading, as reported by a calibrated compass (also HDGm)
-HDC = compass heading, raw reading of the compass (also HDGc)
-VAR = magnetic variation, given in chart or computed from model
-DEV = magnetic deviation, boat specific, depends on HDG
-COG = course over ground, usually from GPS
-SOG = speed over ground, usually from GPS
-SET = set, direction of tide/current, cannot be measured directly
-DFT = drift, rate of tide/current, cannot be measured directly
-STW = speed through water, usually from paddle wheel, water speed vector projected onto HDT (long axis of boat)
-HEL = heel angle, measured by sensor or from heel polar TWA/TWS -> HEL
-LEE = leeway angle, angle between HDT and direction of water speed vector, usually estimated from wind and/or heel and STW
-CRS = course through water
-AWA = apparent wind angle, measured by wind direction sensor
-AWD = apparent wind direction, relative to true north
-AWS = apparent wind speed, measured by anemometer
-TWA = true wind angle, relative to water, relative to HDT
-TWD = true wind direction, relative to water, relative true north
-TWS = true wind speed, relative to water
-GWA = ground wind angle, relative to ground, relative to HDT
-GWD = ground wind direction, relative to ground, relative true north
-GWS = ground wind speed, relative to ground
-DBS = depth below surface
-DBT = depth below transducer
-DBK = depth below keel
-DRT = draught
-DOT = depth of transducer
+| quantity | description                                                                                                          |
+|----------|----------------------------------------------------------------------------------------------------------------------|
+| HDG      | heading, unspecified which of the following                                                                          |
+| HDT      | true heading, direction bow is pointing to, relative to true north (also HDGt)                                       |
+| HDM      | magnetic heading, as reported by a calibrated compass (also HDGm)                                                    |
+| HDC      | compass heading, raw reading of the compass (also HDGc)                                                              |
+| VAR      | magnetic variation, given in chart or computed from model                                                            |
+| DEV      | magnetic deviation, boat specific, depends on HDG                                                                    |
+| COG      | course over ground, usually from GPS                                                                                 |
+| SOG      | speed over ground, usually from GPS                                                                                  |
+| SET      | set, direction of tide/current, cannot be measured directly                                                          |
+| DFT      | drift, rate of tide/current, cannot be measured directly                                                             |
+| STW      | speed through water, usually from paddle wheel, water speed vector projected onto HDT (long axis of boat)            |
+| HEL      | heel angle, measured by sensor or from heel polar TWA/TWS -> HEL                                                     |
+| LEE      | leeway angle, angle between HDT and direction of water speed vector, usually estimated from wind and/or heel and STW |
+| CRS      | course through water                                                                                                 |
+| AWA      | apparent wind angle, measured by wind direction sensor                                                               |
+| AWD      | apparent wind direction, relative to true north                                                                      |
+| AWS      | apparent wind speed, measured by anemometer                                                                          |
+| TWA      | true wind angle, relative to water, relative to HDT                                                                  |
+| TWD      | true wind direction, relative to water, relative true north                                                          |
+| TWS      | true wind speed, relative to water                                                                                   |
+| GWA      | ground wind angle, relative to ground, relative to HDT                                                               |
+| GWD      | ground wind direction, relative to ground, relative true north                                                       |
+| GWS      | ground wind speed, relative to ground                                                                                |
+| DBS      | depth below surface                                                                                                  |
+| DBT      | depth below transducer                                                                                               |
+| DBK      | depth below keel                                                                                                     |
+| DRT      | draught                                                                                                              |
+| DOT      | depth of transducer                                                                                                  |
