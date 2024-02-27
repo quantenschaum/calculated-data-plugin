@@ -24,3 +24,4 @@ All [calculated](plugin.py:282) and [input](plugin.py:32) values are available i
 
 It also can write [NMEA sentences](plugin.py:58), which are parsed by AvNav itself and are forwarded to NMEA outputs.
 
+![sketch](vectors.svg)
