@@ -28,7 +28,7 @@ VERSION = 20240226
 SOURCE = "calculated-data"
 KNOTS = 1.94384  # knots per m/s
 
-FIELDS = {
+INPUT_FIELDS = {
     "LAT": "gps.lat",
     "LON": "gps.lon",
     "COG": "gps.track",
@@ -49,28 +49,37 @@ FIELDS = {
     "VAR": "gps.magVariation",
     "LEE": "gps.leewayAngle",
     "HEL": "gps.heelAngle",
+    "DBS": "gps.depthBelowSurface",
+    "DBT": "gps.depthBelowTransducer",
+    "DBK": "gps.depthBelowKeel",
 }
 
-SENTENCES = {
-    "SET,DFT": "${ID}VDR,{data.SET:.1f},T,,,{data.DFT*KNOTS:.1f},N",
-    "HDM": "${ID}HDM,{data.HDM:.1f},M",
-    "HDT": "${ID}HDT,{data.HDT:.1f},T",
-    "TWD,TWS": "${ID}MWD,{data.TWD:.1f},T,,,{data.TWS*KNOTS:.1f},N,,",
-    "TWA,TWS": "${ID}MWV,{data.TWA:.1f},T,{data.TWS*KNOTS:.1f},N,A",
-    "AWA,AWS": "${ID}MWV,{data.AWA:.1f},R,{data.AWS*KNOTS:.1f},N,A",
+NMEA_SENTENCES = {
+    "SET,DFT": "${ID}VDR,{data.SET:.1f},T,,,{data.DFT*KNOTS:.1f},N",  # set and drift
+    "HDM": "${ID}HDM,{data.HDM:.1f},M",  # magnetic heading
+    "HDT": "${ID}HDT,{data.HDT:.1f},T",  # true heading
+    "TWD,TWS": "${ID}MWD,{data.TWD:.1f},T,,,{data.TWS*KNOTS:.1f},N,,",  # true wind direction and speed
+    "TWA,TWS": "${ID}MWV,{data.TWA:.1f},T,{data.TWS*KNOTS:.1f},N,A",  # true wind angle and speed
+    "AWA,AWS": "${ID}MWV,{data.AWA:.1f},R,{data.AWS*KNOTS:.1f},N,A",  # apparent wind angle and speed
+    "DBS": "${ID}DBS,,,{data.DBS:.1f},M,,",  # depth below surface
+    "DBT": "${ID}DBT,,,{data.DBT:.1f},M,,",  # depth below transducer
+    "DBK": "${ID}DBK,,,{data.DBK:.1f},M,,",  # depth below keel
 }
 
 PATH_PREFIX = "gps.calculated."
 PERIOD = "period"
 WMM_FILE = "wmm_file"
+WMM_PERIOD = "wmm_period"
 WRITE = "nmea_write"
 NMEA_FILTER = "nmea_filter"
 PRIORITY = "nmea_priority"
 TALKER_ID = "nmea_id"
+DEPTH_OF_TRANSDUCER = "depth_transducer"
+DRAUGHT = "draught"
 CONFIG = [
     {
         "name": PERIOD,
-        "description": "compute period",
+        "description": "compute period (s)",
         "type": "FLOAT",
         "default": 1,
     },
@@ -80,9 +89,27 @@ CONFIG = [
         "default": "WMM2020.COF",
     },
     {
+        "name": WMM_PERIOD,
+        "description": "period (s) to recompute magnetic variation",
+        "type": "NUMBER",
+        "default": 600,
+    },
+    {
+        "name": DEPTH_OF_TRANSDUCER,
+        "description": "depth of transducer (m) (negative=disabled)",
+        "type": "FLOAT",
+        "default": -1,
+    },
+    {
+        "name": DRAUGHT,
+        "description": "draught (m) (negative=disabled)",
+        "type": "FLOAT",
+        "default": -1,
+    },
+    {
         "name": WRITE,
-        "description": "write NMEA",
-        "default": "True",
+        "description": "write NMEA sentences (sent to outputs and parsed by AvNav)",
+        "default": "False",
         "type": "BOOLEAN",
     },
     {
@@ -114,7 +141,7 @@ class Plugin(object):
             "data": [
                 {
                     "path": "gps.calculated.*",
-                    "description": "calculated and copyied values",
+                    "description": "calculated and input values",
                 },
             ],
         }
@@ -169,18 +196,19 @@ class Plugin(object):
     def mag_variation(self, lat, lon):
         if not self.variation_model:
             try:
+                self.variation_period = int(self.getConfigValue(WMM_PERIOD))
+                assert self.variation_period > 0
+                self.variation_time = 0
                 filename = self.getConfigValue(WMM_FILE)
                 if "/" not in filename:
                     filename = os.path.join(
                         os.path.dirname(__file__) + "/lib", filename
                     )
                 self.variation_model = geomag.GeoMag(filename)
-                self.variation_time = 0
-                self.variation = None
             except Exception as x:
-                self.api.log(f"error loading WMM {x}")
+                self.api.log(f"WMM error {x}")
                 return
-        if time.monotonic() - self.variation_time > 600:
+        if time.monotonic() - self.variation_time > self.variation_period:
             self.variation = self.variation_model.GeoMag(lat, lon).dec
             self.variation_time = time.monotonic()
         return self.variation
@@ -189,18 +217,27 @@ class Plugin(object):
         self.config_changed = True
         while not self.api.shouldStopMainThread():
             if self.config_changed:
-                wait = float(self.getConfigValue(PERIOD))
+                self.variation_model = None
+                period = float(self.getConfigValue(PERIOD))
+                assert period > 0
                 nmea_write = self.getConfigValue(WRITE).startswith("T")
                 nmea_filter = self.getConfigValue(NMEA_FILTER).split(",")
                 nmea_priority = int(self.getConfigValue(PRIORITY))
+                assert nmea_priority > 0
+                dot = float(self.getConfigValue(DEPTH_OF_TRANSDUCER))
+                draught = float(self.getConfigValue(DRAUGHT))
                 ID = self.getConfigValue(TALKER_ID)
+                assert len(ID) == 2
                 self.config_changed = False
 
-            data = {k: self.readValue(p) for k, p in FIELDS.items()}
+            data = {k: self.readValue(p) for k, p in INPUT_FIELDS.items()}
             present = {k for k in data.keys() if data[k] is not None}
 
             if all(data.get(k) is not None for k in ("LAT", "LON")):
                 data["VAR"] = self.mag_variation(data["LAT"], data["LON"])
+
+            data["DOT"] = dot if dot >= 0 else None
+            data["DRT"] = draught if draught >= 0 else None
 
             data = CourseData(**data)
             calculated = {k for k in data.keys() if data[k] is not None}
@@ -211,7 +248,7 @@ class Plugin(object):
 
             sending = set()
             if nmea_write:
-                for f, s in SENTENCES.items():
+                for f, s in NMEA_SENTENCES.items():
                     if all(k in calculated for k in f.split(",")):
                         s = eval(f"f'{s}'")
                         if not nmea_filter or NMEAParser.checkFilter(s, nmea_filter):
@@ -224,7 +261,7 @@ class Plugin(object):
                             sending.add(s[:6])
 
             self.api.setStatus("NMEA", f"{present} --> {calculated} sending {sending}")
-            time.sleep(wait)
+            time.sleep(period)
 
 
 class CourseData:
@@ -264,6 +301,11 @@ class CourseData:
     GWA = ground wind angle, relative to ground, relative to HDT
     GWD = ground wind direction, relative to ground, relative true north
     GWS = ground wind speed, relative to ground
+    DBS = depth below surface
+    DBT = depth below transducer
+    DBK = depth below keel
+    DRT = draught
+    DOT = depth of transducer
 
     Beware! Wind direction is the direction where the wind is coming FROM, SET,HDG,COG is the direction where the tide/boat is going TO.
 
@@ -387,6 +429,12 @@ class CourseData:
 
         if self.misses("AWD") and self.has("AWA", "HDT"):
             self.AWD = to360(self.AWA + self.HDT)
+
+        if self.misses("DBS") and self.has("DBT", "DOT"):
+            self.DBS = self.DBT + self.DOT
+
+        if self.misses("DBK") and self.has("DBS", "DRT"):
+            self.DBK = self.DBS - self.DRT
 
     def __getattribute__(self, item):
         if re.match("[A-Z]+", item):

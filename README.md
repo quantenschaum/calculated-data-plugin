@@ -11,6 +11,6 @@ If COG/SOG and HDT/STW are supplied, it will calculate set and drift SET/DFT.
 
 It will calculate true wind angle TWA and speed TWS from apparent wind angle AWA and speed AWS and water speed STW.
 
-All calculated and input values are available in AvNav under `gps.calculated.*`. It reads its input data from the AvNav data model, after NMEA parsing hase been done by AvNav.
+All [calculated](plugin.py:282) and [input](plugin.py:32) values are available in AvNav under `gps.calculated.*`. It reads its input data from the AvNav data model, after NMEA parsing hase been done by AvNav.
 
-It also can write NMEA sentences (`VDR,HDM,HDT,MWD,MWV`), which are parsed by AvNav itself and are forwarded to NMEA outputs. 
+It also can write [NMEA sentences](plugin.py:58), which are parsed by AvNav itself and are forwarded to NMEA outputs. 
