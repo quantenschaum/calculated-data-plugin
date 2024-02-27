@@ -27,15 +27,14 @@ $$ HDT = HDM + VAR $$
 
 ### Leeway and Course
 
-$$ LEE = LEF * HEL / STW^2 $$ (not yet implemented)
+$$ LEE = LEF \cdot HEL / STW^2 $$
 $$ CRS = HDT + LEE $$
 
-With leeway factor LEF = 0..20, boat specific
+With leeway factor \[LEF = 0..20\], boat specific
 
 ### Course, Speed and Tide
 
-- [COG,SOG] = [CRS,STW] (+) [SET,DFT]
-- [SET,DFT] = [COG,SOG] (+) [CRS,-STW]
+$$ [SET,DFT] = [COG,SOG] \oplus [CRS,-STW] $$
 
 ### Wind
 
