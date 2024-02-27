@@ -40,13 +40,12 @@ $$ [SET,DFT] = [COG,SOG] \oplus [CRS,-STW] $$
 
 angles and directions are always converted like \$xWD = xWA + HDT\$
 
-$$ [TWA,TWS] = [AWA,AWS] \oplus [LEE,-STW] $$
+$$ [TWA,TWS] = [AWA,AWS] \oplus [LEE,-STW] $$  
 $$ [GWD,GWS] = [AWD,AWS] \oplus [COG,-SOG] $$
 
 ### Depth
 
-$$ DBS = DBT + DOT$$
-
+$$ DBS = DBT + DOT$$  
 $$ DBK = DBS - DRT $$
 
 The \$\oplus\$ operator denotes the [addition of polar vectors](https://math.stackexchange.com/questions/1365622/adding-two-polar-vectors).
