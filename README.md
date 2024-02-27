@@ -27,6 +27,6 @@ $$ HDT = HDM + VAR $$
 
 Set and Drift
 
-$$ [SET,DFT] = [COG,SOG] (+) [CRS,-STW] $$
+$$ [SET,DFT] = [COG,SOG] \oplus [CRS,-STW] $$
 
 The \[\oplus\] operator denotes the [addition of polar vectors](https://math.stackexchange.com/questions/1365622/adding-two-polar-vectors).
