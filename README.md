@@ -50,7 +50,7 @@ angles and directions are always converted like xWD = xWA + HDT and xWA = xWD - 
 
 - [GWD,GWS] = [AWD,AWS] (+) [COG,-SOG]
 
-The \[\oplus\] operator denotes the [addition of polar vectors](https://math.stackexchange.com/questions/1365622/adding-two-polar-vectors).
+The \$\oplus\$ operator denotes the [addition of polar vectors](https://math.stackexchange.com/questions/1365622/adding-two-polar-vectors).
 
 ### Definitions
 
