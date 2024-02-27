@@ -30,7 +30,7 @@ $$ HDT = HDM + VAR $$
 $$ LEE = LEF \cdot HEL / STW^2 $$
 $$ CRS = HDT + LEE $$
 
-With leeway factor \[LEF = 0..20\], boat specific
+With leeway factor \$LEF = 0..20\$, boat specific
 
 ### Course, Speed and Tide
 
